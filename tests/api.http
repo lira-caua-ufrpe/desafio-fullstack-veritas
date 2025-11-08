@@ -1,0 +1,31 @@
+@base = http://localhost:8080
+@json = application/json
+
+### Health
+GET {{base}}/health
+
+### Listar
+GET {{base}}/tasks
+
+### Criar (ok)
+POST {{base}}/tasks
+Content-Type: {{json}}
+
+{
+  "title": "Criar colunas",
+  "description": "A Fazer / Em Progresso / Concluídas",
+  "status": "todo"
+}
+
+### Atualizar (troque id se precisar)
+PUT {{base}}/tasks/1
+Content-Type: {{json}}
+
+{
+  "title": "Criar colunas (editado)",
+  "description": "Kanban básico",
+  "status": "doing"
+}
+
+### Excluir
+DELETE {{base}}/tasks/1
