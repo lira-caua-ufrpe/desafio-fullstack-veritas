@@ -39,8 +39,10 @@ func tasksCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		mu.Lock()
-		defer mu.Unlock()
-		writeJSON(w, http.StatusOK, tasks)
+		list := make([]Task, len(tasks))
+		copy(list, tasks)
+		mu.Unlock()
+		writeJSON(w, http.StatusOK, list)
 
 	case http.MethodPost:
 		var in Task
@@ -65,6 +67,9 @@ func tasksCollectionHandler(w http.ResponseWriter, r *http.Request) {
 		nextID++
 		tasks = append(tasks, in)
 		mu.Unlock()
+
+		// salvar fora do lock
+		saveTasks()
 
 		writeJSON(w, http.StatusCreated, in)
 
@@ -108,8 +113,8 @@ func tasksItemHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		var updated *Task
 		mu.Lock()
-		defer mu.Unlock()
 		for i, t := range tasks {
 			if t.ID == id {
 				// atualizar campos
@@ -119,24 +124,42 @@ func tasksItemHandler(w http.ResponseWriter, r *http.Request) {
 					t.Status = in.Status
 				}
 				tasks[i] = t
-				writeJSON(w, http.StatusOK, t)
-				return
+				updated = &t
+				break
 			}
 		}
-		http.NotFound(w, r)
+		mu.Unlock()
+
+		if updated == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		// salvar fora do lock
+		saveTasks()
+		writeJSON(w, http.StatusOK, *updated)
 
 	case http.MethodDelete:
+		var removed bool
 		mu.Lock()
-		defer mu.Unlock()
 		for i, t := range tasks {
 			if t.ID == id {
 				// remove mantendo ordem
 				tasks = append(tasks[:i], tasks[i+1:]...)
-				w.WriteHeader(http.StatusNoContent)
-				return
+				removed = true
+				break
 			}
 		}
-		http.NotFound(w, r)
+		mu.Unlock()
+
+		if !removed {
+			http.NotFound(w, r)
+			return
+		}
+
+		// salvar fora do lock
+		saveTasks()
+		w.WriteHeader(http.StatusNoContent)
 
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)

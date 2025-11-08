@@ -19,6 +19,7 @@ func withCORS(next http.Handler) http.Handler {
 }
 
 func main() {
+	loadTasks()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", healthHandler)
 	mux.HandleFunc("/tasks", tasksCollectionHandler) // GET, POST
