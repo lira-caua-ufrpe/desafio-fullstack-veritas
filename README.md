@@ -35,7 +35,7 @@ desafio-fullstack-veritas
 │  └─ package.json
 ├─ docs/
 │  ├─ user-flow.png     # diagrama do fluxo do usuário (obrigatório)
-│  └─ user-flow.md      # fonte Mermaid (manutenção)
+│  └─ data-flow.png     # (opcional)
 ├─ tests/
 │  ├─ rest.http         # chamadas REST (VS Code REST Client)
 │  └─ run.ps1           # smoke-test (Windows/PowerShell)
